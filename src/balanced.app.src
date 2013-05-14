@@ -1,0 +1,14 @@
+{application, balanced,
+ [
+  {description, "balanced - erlang balancedpayments.com API access"},
+  {vsn, "0.3.0"},
+  {modules, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  inets,
+                  ssl
+                 ]},
+  {env, []}
+ ]
+}.
