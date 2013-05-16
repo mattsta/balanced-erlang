@@ -12,6 +12,8 @@ balanced_test_() ->
     [
      {"Create Anonymous Account",
        fun create_account/0},
+     {"Underwrite Anonymous Account",
+       fun underwrite_anonymous_account/0},
      {"Create Person Account",
        fun underwrite_person/0},
      {"Attach Card",
@@ -41,6 +43,20 @@ create_account() ->
   AccountId = proplists:get_value(id, Proplist),
   put(account_id, AccountId),
   ?debugFmt("Account ID: ~p~n", [AccountId]).
+
+underwrite_anonymous_account() ->
+  AccountId = get(account_id),
+  Result = ?debugTime("Underwriting the anonymous account as a person",
+    balanced:account_underwrite_as_person(?TEST_MARKET, AccountId,
+      "Name Name", "+15555555555", "11101",
+      "340 S Poop Ave", "1999-04-01",
+      "tester@jester.jest")),
+  ?assertMatch({success, _}, Result),
+  {success, Proplist} = Result,
+  Type = proplists:get_value('_type', Proplist),
+  ?assertEqual(Type, <<"account">>),
+  Roles = proplists:get_value(roles, Proplist),
+  ?assertEqual([<<"merchant">>], Roles).
 
 underwrite_person() ->
   Result = ?debugTime("Underwriting a new account as a person",

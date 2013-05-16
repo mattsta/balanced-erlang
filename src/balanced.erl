@@ -1,6 +1,7 @@
 -module(balanced).
 
 -export([account_create_anonymous/1, account_create_as_person/7]).
+-export([account_underwrite_as_person/8]).
 -export([account_add_card/3, account_add_bank/3]).
 -export([credit_from_uri/3, credit_detail/4]).
 -export([debit/5]).
@@ -14,8 +15,8 @@
 account_create_anonymous(MarketId) ->
   request_account_create(MarketId).
 
-account_create_as_person(MarketId, Name,
-                          Phone, Postal, StreetAddress, DOB, Email) ->
+account_create_as_person(MarketId,
+                         Name, Phone, Postal, StreetAddress, DOB, Email) ->
   Fields = [{"merchant[type]", "person"},
             {"merchant[name]", Name},
             {"merchant[phone_number]", Phone},
@@ -26,6 +27,19 @@ account_create_as_person(MarketId, Name,
 
   OnlyWithValues = [{K, V} || {K, V} <- Fields, V =/= [] andalso V =/= <<>>],
   request_account_underwrite(MarketId, OnlyWithValues).
+
+account_underwrite_as_person(MarketId, AccountId,
+                         Name, Phone, Postal, StreetAddress, DOB, Email) ->
+  Fields = [{"merchant[type]", "person"},
+            {"merchant[name]", Name},
+            {"merchant[phone_number]", Phone},
+            {"merchant[postal_code]", Postal},
+            {"merchant[street_address]", StreetAddress},
+            {"merchant[dob]", DOB},
+            {"merchant[email_address]", Email}],
+
+  OnlyWithValues = [{K, V} || {K, V} <- Fields, V =/= [] andalso V =/= <<>>],
+  request_account_underwrite(MarketId, AccountId, OnlyWithValues).
 
 %%%--------------------------------------------------------------------
 %%% Account Manipulation
@@ -75,6 +89,9 @@ request_account_add_thing(MarketId, AccountId, ThingToAdd) ->
 
 request_account_underwrite(MarketId, Fields) ->
   request_run(gen_action_url(MarketId, accounts), post, Fields).
+
+request_account_underwrite(MarketId, AccountId, Fields) ->
+  request_run(gen_account_url(MarketId, AccountId), put, Fields).
 
 request_credit(CreditURI, Fields) ->
   request_run(gen_gen_url(CreditURI), post, Fields).
